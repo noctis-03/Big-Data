@@ -69,9 +69,7 @@
   }
 
   /* Section */
-  .section {
-    margin-bottom: 56px;
-  }
+  .section { margin-bottom: 56px; }
   .section-header {
     display: flex;
     align-items: baseline;
@@ -106,6 +104,7 @@
     flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 20px;
+    align-items: center;
   }
   .legend-item {
     display: flex;
@@ -119,6 +118,13 @@
     height: 10px;
     border-radius: 2px;
     flex-shrink: 0;
+  }
+  .legend-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.85;
   }
   .legend-line {
     width: 22px;
@@ -136,6 +142,13 @@
     font-size: 10.5px;
     color: var(--gray-400);
     margin-left: 2px;
+  }
+  .legend-axis {
+    font-size: 11.5px;
+    color: var(--gray-500);
+    padding-right: 4px;
+    border-right: 1px solid var(--gray-200);
+    margin-right: 8px;
   }
 
   .chart-wrap {
@@ -168,6 +181,13 @@
     margin: 56px 0;
   }
 
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+  }
+
   @media (max-width: 600px) {
     body { padding: 24px 16px 60px; }
     .report-title { font-size: 20px; }
@@ -180,7 +200,7 @@
 <header class="report-header">
   <p class="report-label">Game Industry Data Report</p>
   <h1 class="report-title">게임 이용 현황 데이터 시각화</h1>
-  <p class="report-sub">게임 이용 중단 이유 · 대체 여가 생활 · 연도별 이용률 비교</p>
+  <p class="report-sub">게임 이용 중단 이유 · 대체 여가 생활 · 연도별 이용률 · 키워드 분석</p>
 </header>
 
 <!-- CHART 1 -->
@@ -256,6 +276,36 @@
   </div>
 </section>
 
+<hr class="divider">
+
+<!-- CHART 4: 키워드 버블 차트 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">키워드별 가중치 · 빈도수 분포</h2>
+  </div>
+  <h3 class="sr-only">키워드별 가중치와 빈도수 버블 차트 — 유튜브, OTT, 이용자 등 28개 키워드</h3>
+
+  <div class="chart-card">
+    <div class="chart-legend">
+      <span class="legend-axis">X: 빈도수 &nbsp;·&nbsp; Y: 가중치 &nbsp;·&nbsp; 크기: 가중치</span>
+      <span class="legend-item"><span class="legend-circle" style="background:#534AB7;"></span>상위 그룹 (가중치 5 이상)</span>
+      <span class="legend-item"><span class="legend-circle" style="background:#5DCAA5;"></span>하위 그룹 (가중치 5 미만)</span>
+    </div>
+    <div class="chart-wrap" style="height:480px;">
+      <canvas id="bubbleChart" role="img" aria-label="키워드 가중치와 빈도수 버블 차트. 유튜브가 가중치 18.06으로 1위, 빈도수는 이용자가 344로 최다."></canvas>
+    </div>
+    <div class="source-note">
+      <p>
+        <strong>키워드 분석 개요</strong><br>
+        총 28개 키워드를 가중치(중요도)와 빈도수(등장 횟수) 2축으로 시각화함.
+        <strong>유튜브(18.06)</strong>가 가중치 최상위, <strong>이용자(344회)</strong>가 빈도수 최다 키워드로 확인됨.
+        가중치 5 이상의 상위 그룹은 보라색, 그 외 키워드는 청록색으로 구분 표시함.
+      </p>
+    </div>
+  </div>
+</section>
+
 <script>
 /* ── Chart 1: 게임 중단 이유 ── */
 new Chart(document.getElementById('chart1'), {
@@ -277,11 +327,7 @@ new Chart(document.getElementById('chart1'), {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => `  ${ctx.parsed.x}%`
-        }
-      }
+      tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x}%` } }
     },
     scales: {
       x: {
@@ -334,11 +380,7 @@ new Chart(document.getElementById('chart2'), {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => `  ${ctx.parsed.x}%`
-        }
-      }
+      tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x}%` } }
     },
     scales: {
       x: {
@@ -429,6 +471,128 @@ new Chart(document.getElementById('chart3'), {
         ticks: { callback: v => v+'%', color:'#888780', font:{size:11}, stepSize:20 },
         grid: { color:'rgba(136,135,128,0.12)' },
         border: { display: false }
+      }
+    }
+  }
+});
+
+/* ── Chart 4: 키워드 버블 차트 ── */
+const keywords = [
+  {k:'유튜브', w:18.06, f:140},
+  {k:'OTT', w:12.82, f:132},
+  {k:'이용자', w:10.75, f:344},
+  {k:'이용자실태조사', w:10.05, f:57},
+  {k:'코로나19', w:8.28, f:48},
+  {k:'AI', w:6.81, f:109},
+  {k:'청소년들', w:6.67, f:25},
+  {k:'틱톡', w:5.86, f:53},
+  {k:'전자상거래', w:4.8, f:51},
+  {k:'스마트폰', w:4.8, f:38},
+  {k:'카카오톡', w:4.62, f:38},
+  {k:'콘진원', w:4.39, f:25},
+  {k:'문화체육관광부', w:4.14, f:16},
+  {k:'보고서', w:4.07, f:37},
+  {k:'소셜미디어', w:3.91, f:14},
+  {k:'TV', w:3.81, f:78},
+  {k:'고등학생', w:3.68, f:36},
+  {k:'네이버', w:3.56, f:123},
+  {k:'PC', w:3.2, f:166},
+  {k:'앱마켓', w:3.11, f:23},
+  {k:'디즈니플러스', w:3.11, f:19},
+  {k:'우리나라10대청소년들', w:2.86, f:2},
+  {k:'챗GPT', w:2.64, f:27},
+  {k:'역대최저치', w:2.57, f:7},
+  {k:'릴스', w:2.47, f:46},
+  {k:'코로나엔데믹', w:2.4, f:6},
+  {k:'영상콘텐츠', w:2.18, f:30},
+  {k:'웹툰', w:1.8, f:30}
+];
+
+const high = keywords.filter(d => d.w >= 5);
+const low  = keywords.filter(d => d.w < 5);
+
+const toDataset = (arr) => arr.map(d => ({
+  x: d.f,
+  y: d.w,
+  r: Math.max(6, d.w * 2.2),
+  label: d.k
+}));
+
+new Chart(document.getElementById('bubbleChart'), {
+  type: 'bubble',
+  data: {
+    datasets: [
+      {
+        label: '상위 그룹 (가중치 5 이상)',
+        data: toDataset(high),
+        backgroundColor: 'rgba(83,74,183,0.72)',
+        borderColor: '#3C3489',
+        borderWidth: 1.5
+      },
+      {
+        label: '하위 그룹',
+        data: toDataset(low),
+        backgroundColor: 'rgba(93,202,165,0.55)',
+        borderColor: '#0F6E56',
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: { top: 24, right: 20, bottom: 10, left: 10 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const d = ctx.datasetIndex === 0
+              ? high[ctx.dataIndex]
+              : low[ctx.dataIndex];
+            return [` 키워드: ${d.k}`, ` 가중치: ${d.w}`, ` 빈도수: ${d.f}`];
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        min: -10,
+        max: 390,
+        title: { display: true, text: '빈도수', color: '#888780', font: { size: 12 } },
+        ticks: { color: '#888780', font: { size: 11 } },
+        grid: { color: 'rgba(136,135,128,0.15)' },
+        border: { display: false }
+      },
+      y: {
+        min: 0,
+        max: 22,
+        title: { display: true, text: '가중치', color: '#888780', font: { size: 12 } },
+        ticks: { color: '#888780', font: { size: 11 } },
+        grid: { color: 'rgba(136,135,128,0.15)' },
+        border: { display: false }
+      }
+    },
+    animation: {
+      onComplete() {
+        const chart = this;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '500 10px "Noto Sans KR", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        [high, low].forEach((arr, di) => {
+          const meta = chart.getDatasetMeta(di);
+          arr.forEach((d, i) => {
+            const el = meta.data[i];
+            if (!el) return;
+            ctx.fillStyle = di === 0 ? '#ffffff' : '#085041';
+            const label = d.k.length > 5 ? d.k.slice(0,5)+'…' : d.k;
+            ctx.fillText(label, el.x, el.y);
+          });
+        });
+        ctx.restore();
       }
     }
   }
